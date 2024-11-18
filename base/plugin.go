@@ -3,11 +3,13 @@ package base
 import (
 	"fmt"
 	"github.com/wbsr9876/streamdocksdk/log"
+	"github.com/wbsr9876/streamdocksdk/proto"
 	"github.com/wbsr9876/streamdocksdk/session"
 )
 
 type Plugin struct {
 	Actions map[string]ActionInterface
+	Info    *proto.Info
 }
 
 func (p *Plugin) RegisterAction(name string, action ActionInterface) {
@@ -15,6 +17,10 @@ func (p *Plugin) RegisterAction(name string, action ActionInterface) {
 		p.Actions = make(map[string]ActionInterface)
 	}
 	p.Actions[name] = action
+}
+
+func (p *Plugin) SetInfo(info *proto.Info) {
+	p.Info = info
 }
 
 func (p *Plugin) SetConnection(conn *session.ConnectionManager) {

@@ -25,7 +25,7 @@ func NewConnectionManager(port int, pluginUUID string, registerEvent string, plu
 		registerEvent: registerEvent,
 		plugin:        plugin,
 	}
-	log.SetConnection(c)
+	//log.SetConnection(c)
 	plugin.SetConnection(c)
 	return c
 }
@@ -67,6 +67,7 @@ func (c *ConnectionManager) loop() {
 		if messageType != websocket.TextMessage {
 			continue
 		}
+		log.Message(string(message))
 		var e = &MessageEvent{}
 		err = json.Unmarshal(message, e)
 		if err != nil {
