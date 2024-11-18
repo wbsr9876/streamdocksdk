@@ -12,13 +12,13 @@ type ActionInterface interface {
 	SetState(int) error
 	SetTitle(string, proto.ESDSDKTarget, int) error
 	SetImage(string, proto.ESDSDKTarget, int) error
-	SetSettings(map[string]interface{}) error
-	SetGlobalSettings(map[string]interface{}) error
+	SetSettings(interface{}) error
+	SetGlobalSettings(interface{}) error
 	ShowAlert() error
 	ShowOk() error
-	SendToPropertyInspector(map[string]interface{}) error
-	SendToPlugin(map[string]interface{}) error
-	HandleAction(action session.Action) error
+	SendToPropertyInspector(interface{}) error
+	SendToPlugin(interface{}) error
+	HandleAction(header *proto.MessageHeader, body []byte) error
 }
 
 type Action struct {
@@ -65,14 +65,14 @@ func (p *Action) SetImage(image string, target proto.ESDSDKTarget, state int) er
 	return p.Conn.Send(msg)
 }
 
-func (p *Action) SetSettings(settings map[string]interface{}) error {
+func (p *Action) SetSettings(settings interface{}) error {
 	msg := proto.NewSetSettings()
 	msg.Payload = settings
 	msg.Context = p.Context
 	return p.Conn.Send(msg)
 }
 
-func (p *Action) SetGlobalSettings(settings map[string]interface{}) error {
+func (p *Action) SetGlobalSettings(settings interface{}) error {
 	msg := proto.NewSetGlobalSettings()
 	msg.Payload = settings
 	msg.Context = p.Context
@@ -91,7 +91,7 @@ func (p *Action) ShowOk() error {
 	return p.Conn.Send(msg)
 }
 
-func (p *Action) SendToPropertyInspector(payload map[string]interface{}) error {
+func (p *Action) SendToPropertyInspector(payload interface{}) error {
 	msg := proto.NewSendToPropertyInspector()
 	msg.Context = p.Context
 	msg.Action = p.Name
@@ -99,10 +99,14 @@ func (p *Action) SendToPropertyInspector(payload map[string]interface{}) error {
 	return p.Conn.Send(msg)
 }
 
-func (p *Action) SendToPlugin(payload map[string]interface{}) error {
+func (p *Action) SendToPlugin(payload interface{}) error {
 	msg := proto.NewSendToPlugin()
 	msg.Context = p.Context
 	msg.Action = p.Name
 	msg.Payload = payload
 	return p.Conn.Send(msg)
+}
+
+func (p *Action) HandleAction(header *proto.MessageHeader, body []byte) error {
+	return nil
 }

@@ -32,7 +32,7 @@ type DidReceiveSettings struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Settings    map[string]interface{} `json:"settings"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -60,7 +60,7 @@ func (m *DidReceiveSettings) GetDevice() string {
 type DidReceiveGlobalSettings struct {
 	Event   string `json:"event"`
 	Payload struct {
-		Settings map[string]interface{} `json:"settings"`
+		Settings interface{} `json:"settings"`
 	} `json:"payload"`
 }
 
@@ -74,8 +74,8 @@ type DialDown struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Controller  string                 `json:"controller"`
-		Settings    map[string]interface{} `json:"settings"`
+		Controller  string      `json:"controller"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -105,8 +105,8 @@ type DialUp struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Controller  string                 `json:"controller"`
-		Settings    map[string]interface{} `json:"settings"`
+		Controller  string      `json:"controller"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -136,8 +136,8 @@ type DialRotate struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Controller  string                 `json:"controller"`
-		Settings    map[string]interface{} `json:"settings"`
+		Controller  string      `json:"controller"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -169,7 +169,7 @@ type KeyDown struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Settings    map[string]interface{} `json:"settings"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -201,7 +201,7 @@ type KeyUp struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Settings    map[string]interface{} `json:"settings"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -233,7 +233,7 @@ type WillAppear struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Settings    map[string]interface{} `json:"settings"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -266,7 +266,7 @@ type WillDisappear struct {
 	Context string `json:"context"`
 	Device  string `json:"device"`
 	Payload struct {
-		Settings    map[string]interface{} `json:"settings"`
+		Settings    interface{} `json:"settings"`
 		Coordinates struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
@@ -303,9 +303,9 @@ type TitleParametersDidChange struct {
 			Column int `json:"column"`
 			Row    int `json:"row"`
 		} `json:"coordinates"`
-		Settings        map[string]interface{} `json:"settings"`
-		State           int                    `json:"state"`
-		Title           string                 `json:"title"`
+		Settings        interface{} `json:"settings"`
+		State           int         `json:"state"`
+		Title           string      `json:"title"`
 		TitleParameters struct {
 			FontFamily     string `json:"fontFamily"`
 			FontSize       int    `json:"fontSize"`

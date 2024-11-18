@@ -49,10 +49,6 @@ func (c *ConnectionManager) OnClose(code int, text string) error {
 	return nil
 }
 
-type MessageEvent struct {
-	Event string `json:"event"`
-}
-
 func (c *ConnectionManager) loop() {
 	for {
 		if c.closed {
@@ -68,25 +64,19 @@ func (c *ConnectionManager) loop() {
 			continue
 		}
 		log.Message(string(message))
-		var e = &MessageEvent{}
+		var e = &proto.MessageHeader{}
 		err = json.Unmarshal(message, e)
 		if err != nil {
 			continue
 		}
+		if e.Action != "" {
+			err = c.plugin.HandleAction(e, message)
+		} else {
+			err = c.plugin.HandleEvent(e, message)
 
-		if f, ok := proto.MessageFactory[e.Event]; ok && f != nil {
-			var msg = f()
-			err = json.Unmarshal(message, msg)
-			if err != nil {
-				continue
-			}
-			if a, ok := msg.(Action); ok {
-				err = c.plugin.HandleAction(a)
-			} else if e, ok := msg.(Event); ok {
-				err = c.plugin.HandleEvent(e)
-			} else {
-				continue
-			}
+		}
+		if err != nil {
+			continue
 		}
 	}
 }
@@ -99,6 +89,7 @@ func (c *ConnectionManager) Send(v interface{}) error {
 	if err != nil {
 		return err
 	}
+	log.Message("Send:" + string(bytes))
 	err = c.conn.WriteMessage(websocket.TextMessage, bytes)
 	if err != nil {
 		c.closed = true

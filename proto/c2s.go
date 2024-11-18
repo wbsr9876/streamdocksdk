@@ -10,9 +10,9 @@ type Register struct {
 //}
 
 type SetSettings struct {
-	Event   string                 `json:"event"`
-	Context string                 `json:"context"`
-	Payload map[string]interface{} `json:"payload"`
+	Event   string      `json:"event"`
+	Context string      `json:"context"`
+	Payload interface{} `json:"payload"`
 }
 
 func NewSetSettings() *SetSettings {
@@ -33,9 +33,9 @@ func NewGetSettings() *GetSettings {
 }
 
 type SetGlobalSettings struct {
-	Event   string                 `json:"event"`
-	Context string                 `json:"context"`
-	Payload map[string]interface{} `json:"payload"`
+	Event   string      `json:"event"`
+	Context string      `json:"context"`
+	Payload interface{} `json:"payload"`
 }
 
 func NewSetGlobalSettings() *SetGlobalSettings {
@@ -150,10 +150,10 @@ func NewSetState() *SetState {
 }
 
 type SendToPropertyInspector struct {
-	Action  string                 `json:"action"`
-	Event   string                 `json:"event"`
-	Context string                 `json:"context"`
-	Payload map[string]interface{} `json:"payload"`
+	Action  string      `json:"action"`
+	Event   string      `json:"event"`
+	Context string      `json:"context"`
+	Payload interface{} `json:"payload"`
 }
 
 func NewSendToPropertyInspector() *SendToPropertyInspector {
@@ -175,10 +175,10 @@ func (m *SendToPropertyInspector) GetContext() string {
 }
 
 type SendToPlugin struct {
-	Action  string                 `json:"action"`
-	Event   string                 `json:"event"`
-	Context string                 `json:"context"`
-	Payload map[string]interface{} `json:"payload"`
+	Action  string      `json:"action"`
+	Event   string      `json:"event"`
+	Context string      `json:"context"`
+	Payload interface{} `json:"payload"`
 }
 
 func NewSendToPlugin() *SendToPlugin {

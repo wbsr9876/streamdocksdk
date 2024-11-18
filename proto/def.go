@@ -8,6 +8,12 @@ const (
 	SoftwareOnly
 )
 
+type MessageHeader struct {
+	Event   string `json:"event"`
+	Action  string `json:"action"`
+	Context string `json:"context"`
+}
+
 type Info struct {
 	Application struct {
 		Font            string `json:"font"`

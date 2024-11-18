@@ -29,12 +29,22 @@ func (p *Plugin) SetConnection(conn *session.ConnectionManager) {
 	}
 }
 
-func (p *Plugin) HandleAction(a session.Action) error {
-	act, ok := p.Actions[a.GetAction()]
-	if !ok {
-		log.Message(fmt.Sprintf("unknown action %v", a))
-		return nil
+func (p *Plugin) HandleAction(header *proto.MessageHeader, body []byte) error {
+	if header == nil {
+		return fmt.Errorf("header is nil")
 	}
-	act.SetContext(a.GetContext())
-	return act.HandleAction(a)
+	if header.Action != "" {
+		act, ok := p.Actions[header.Action]
+		if !ok {
+			log.Message(fmt.Sprintf("unknown action %v", header.Action))
+			return nil
+		}
+		act.SetContext(header.Context)
+		return act.HandleAction(header, body)
+	}
+	return nil
+}
+
+func (p *Plugin) HandleEvent(header *proto.MessageHeader, body []byte) error {
+	return nil
 }
