@@ -28,7 +28,6 @@ type Action[T any] struct {
 	stop           chan struct{}
 	tick           int
 	messageChan    chan *session.Message
-	cacheSettings  *T
 	dirtyTick      int
 }
 
@@ -45,9 +44,6 @@ func (p *Action[T]) Tick(tick int) {
 	if p.dirtyTick > 0 {
 		p.dirtyTick--
 		if p.dirtyTick == 0 {
-			p.settings = p.cacheSettings
-			p.cacheSettings = nil
-			_ = p.SendToPlugin(p.settings)
 			if p.OnSettingsChanged != nil {
 				p.OnSettingsChanged()
 			}
@@ -59,17 +55,20 @@ func (p *Action[T]) TxBegin(message *session.Message) {
 	p.Context = message.Header.Context
 	switch message.Header.Event {
 	case "sendToPlugin":
-		p.cacheSettings = new(T)
+		p.settings = new(T)
 		msg := &proto.SendToPlugin[T]{}
-		msg.Payload = p.cacheSettings
-		p.dirtyTick = 5
-		p.SetTx(msg, nil)
+		msg.Payload = p.settings
+		p.SetTx(msg, func() {
+			_ = p.SetSettings(p.settings)
+			p.dirtyTick = 5
+		})
 	case "willAppear":
 		msg := &proto.WillAppear{}
 		p.settings = new(T)
 		msg.Payload.Settings = p.settings
 		p.SetTx(msg, func() {
 			p.State = msg.Payload.State
+			p.dirtyTick = 0
 			if p.OnSettingsChanged != nil {
 				p.OnSettingsChanged()
 			}
