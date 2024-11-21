@@ -174,27 +174,27 @@ func (m *SendToPropertyInspector) GetContext() string {
 	return m.Context
 }
 
-type SendToPlugin struct {
-	Action  string      `json:"action"`
-	Event   string      `json:"event"`
-	Context string      `json:"context"`
-	Payload interface{} `json:"payload"`
+type SendToPlugin[T any] struct {
+	Action  string `json:"action"`
+	Event   string `json:"event"`
+	Context string `json:"context"`
+	Payload *T     `json:"payload"`
 }
 
-func NewSendToPlugin() *SendToPlugin {
-	return &SendToPlugin{
+func NewSendToPlugin[T any]() *SendToPlugin[T] {
+	return &SendToPlugin[T]{
 		Event: "sendToPlugin",
 	}
 }
 
-func (m *SendToPlugin) GetEvent() string {
+func (m *SendToPlugin[T]) GetEvent() string {
 	return m.Event
 }
 
-func (m *SendToPlugin) GetAction() string {
+func (m *SendToPlugin[T]) GetAction() string {
 	return m.Action
 }
 
-func (m *SendToPlugin) GetContext() string {
+func (m *SendToPlugin[T]) GetContext() string {
 	return m.Context
 }

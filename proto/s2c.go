@@ -4,27 +4,27 @@ func NewMessage[T any]() interface{} {
 	return new(T)
 }
 
-var MessageFactory = map[string]func() interface{}{
-	"didReceiveSettings":            NewMessage[DidReceiveSettings],
-	"didReceiveGlobalSettings":      NewMessage[DidReceiveGlobalSettings],
-	"dialDown":                      NewMessage[DialDown],
-	"dialUp":                        NewMessage[DialUp],
-	"dialRotate":                    NewMessage[DialRotate],
-	"keyDown":                       NewMessage[KeyDown],
-	"keyUp":                         NewMessage[KeyUp],
-	"willAppear":                    NewMessage[WillAppear],
-	"willDisappear":                 NewMessage[WillDisappear],
-	"titleParametersDidChange":      NewMessage[TitleParametersDidChange],
-	"deviceDidConnect":              NewMessage[DeviceDidConnect],
-	"deviceDidDisconnect":           NewMessage[DeviceDidDisconnect],
-	"applicationDidLaunch":          NewMessage[ApplicationDidLaunch],
-	"applicationDidTerminate":       NewMessage[ApplicationDidTerminate],
-	"systemDidWakeUp":               NewMessage[SystemDidWakeUp],
-	"propertyInspectorDidAppear":    NewMessage[PropertyInspectorDidAppear],
-	"propertyInspectorDidDisappear": NewMessage[PropertyInspectorDidDisappear],
-	"sendToPlugin":                  NewMessage[SendToPlugin],
-	"sendToPropertyInspector":       NewMessage[SendToPropertyInspector],
-}
+//var MessageFactory = map[string]func() interface{}{
+//	"didReceiveSettings":            NewMessage[DidReceiveSettings],
+//	"didReceiveGlobalSettings":      NewMessage[DidReceiveGlobalSettings],
+//	"dialDown":                      NewMessage[DialDown],
+//	"dialUp":                        NewMessage[DialUp],
+//	"dialRotate":                    NewMessage[DialRotate],
+//	"keyDown":                       NewMessage[KeyDown],
+//	"keyUp":                         NewMessage[KeyUp],
+//	"willAppear":                    NewMessage[WillAppear],
+//	"willDisappear":                 NewMessage[WillDisappear],
+//	"titleParametersDidChange":      NewMessage[TitleParametersDidChange],
+//	"deviceDidConnect":              NewMessage[DeviceDidConnect],
+//	"deviceDidDisconnect":           NewMessage[DeviceDidDisconnect],
+//	"applicationDidLaunch":          NewMessage[ApplicationDidLaunch],
+//	"applicationDidTerminate":       NewMessage[ApplicationDidTerminate],
+//	"systemDidWakeUp":               NewMessage[SystemDidWakeUp],
+//	"propertyInspectorDidAppear":    NewMessage[PropertyInspectorDidAppear],
+//	"propertyInspectorDidDisappear": NewMessage[PropertyInspectorDidDisappear],
+//	"sendToPlugin":                  NewMessage[SendToPlugin],
+//	"sendToPropertyInspector":       NewMessage[SendToPropertyInspector],
+//}
 
 type DidReceiveSettings struct {
 	Action  string `json:"action"`

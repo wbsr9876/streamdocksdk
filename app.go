@@ -29,13 +29,17 @@ func Run(argv []string, plugin session.Plugin) int {
 		log.Message("port=%d, pluginUUID=%s, registerEvent=%s is required", port, pluginUUID, registerEvent)
 		return 1
 	}
-	var pInfo = &proto.Info{}
-	err := json.Unmarshal([]byte(info), pInfo)
-	if err != nil {
-		log.Message(err.Error())
-		return 1
+
+	if info != "" {
+		var pInfo = &proto.Info{}
+		err := json.Unmarshal([]byte(info), pInfo)
+		if err != nil {
+			log.Message(err.Error())
+			return 1
+		}
+		plugin.SetInfo(pInfo)
 	}
-	plugin.SetInfo(pInfo)
+
 	conn := session.NewConnectionManager(port, pluginUUID, registerEvent, plugin)
 	if conn == nil {
 		log.Message("NewConnectionManager failed")

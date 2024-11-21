@@ -64,20 +64,11 @@ func (c *ConnectionManager) loop() {
 			continue
 		}
 		log.Message(string(message))
-		var e = &proto.MessageHeader{}
-		err = json.Unmarshal(message, e)
+		m, err := NewMessage(message)
 		if err != nil {
 			continue
 		}
-		if e.Action != "" {
-			err = c.plugin.HandleAction(e, message)
-		} else {
-			err = c.plugin.HandleEvent(e, message)
-
-		}
-		if err != nil {
-			continue
-		}
+		c.plugin.OnMessage(m)
 	}
 }
 
@@ -92,6 +83,7 @@ func (c *ConnectionManager) Send(v interface{}) error {
 	log.Message("Send:" + string(bytes))
 	err = c.conn.WriteMessage(websocket.TextMessage, bytes)
 	if err != nil {
+		log.Message("Write error:" + err.Error())
 		c.closed = true
 	}
 	return err

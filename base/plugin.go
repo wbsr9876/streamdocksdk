@@ -7,15 +7,27 @@ import (
 	"github.com/wbsr9876/streamdocksdk/session"
 )
 
+type PluginInf interface {
+	AgentInf
+	SetConnection(conn *session.ConnectionManager)
+	Init()
+}
+
 type Plugin struct {
-	Actions map[string]ActionInterface
+	Agent
+	Actions map[string]ActionInf
 	Info    *proto.Info
 }
 
-func (p *Plugin) RegisterAction(name string, action ActionInterface) {
+func (p *Plugin) Init(plugin PluginInf) {
+	p.Agent.Init(plugin)
+}
+
+func (p *Plugin) RegisterAction(name string, action ActionInf) {
 	if p.Actions == nil {
-		p.Actions = make(map[string]ActionInterface)
+		p.Actions = make(map[string]ActionInf)
 	}
+	action.Init()
 	p.Actions[name] = action
 }
 
@@ -29,22 +41,27 @@ func (p *Plugin) SetConnection(conn *session.ConnectionManager) {
 	}
 }
 
-func (p *Plugin) HandleAction(header *proto.MessageHeader, body []byte) error {
-	if header == nil {
-		return fmt.Errorf("header is nil")
-	}
-	if header.Action != "" {
-		act, ok := p.Actions[header.Action]
-		if !ok {
-			log.Message(fmt.Sprintf("unknown action %v", header.Action))
-			return nil
+func (p *Plugin) OnMessage(message *session.Message) {
+	if message.Header != nil {
+		if message.Header.Action != "" {
+			act, ok := p.Actions[message.Header.Action]
+			if !ok {
+				log.Message(fmt.Sprintf("unknown action %v", message.Header.Action))
+				return
+			}
+			act.OnMessage(message)
+		} else {
+			p.Agent.OnMessage(message)
 		}
-		act.SetContext(header.Context)
-		return act.HandleAction(header, body)
 	}
-	return nil
 }
 
-func (p *Plugin) HandleEvent(header *proto.MessageHeader, body []byte) error {
-	return nil
+// TxBegin TODO implement
+func (p *Plugin) TxBegin(message *session.Message) {
+	p.Agent.TxBegin(message)
+}
+
+// Tick TODO implement
+func (p *Plugin) Tick(tick int) {
+	//Do nothing
 }
