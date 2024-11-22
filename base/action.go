@@ -68,7 +68,9 @@ func (p *Action[T]) TxBegin(message *session.Message) {
 	p.context = message.Header.Context
 	switch message.Header.Event {
 	case "sendToPlugin":
-		p.settings = new(T)
+		if p.settings == nil {
+			p.settings = new(T)
+		}
 		msg := &proto.SendToPlugin[T]{}
 		msg.Payload = p.settings
 		p.SetTx(msg, func() {
