@@ -6,12 +6,23 @@ import (
 	"strings"
 )
 
+type ActionConstraint[T any] interface {
+	*T
+	ActionInf
+}
+
+func NewAction[T any, P ActionConstraint[T]](name string, context string, conn *session.ConnectionManager) ActionInf {
+	p := P(new(T))
+	p.Init(name, context, conn, p)
+	return p
+}
+
 type ActionCreator func(string, string, *session.ConnectionManager) ActionInf
 
 type ActionInf interface {
 	AgentInf
 	OnSettingsChanged()
-	Init(name, context string, conn *session.ConnectionManager)
+	Init(name, context string, conn *session.ConnectionManager, impl ActionInf)
 }
 
 type Action[T any] struct {

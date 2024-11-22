@@ -5,10 +5,22 @@ import (
 	"github.com/wbsr9876/streamdocksdk/session"
 )
 
+type PluginConstraint[T any] interface {
+	*T
+	PluginInf
+}
+
+func NewPlugin[T any, P PluginConstraint[T]]() PluginInf {
+	p := P(new(T))
+	p.Init(p)
+	return p
+}
+
 type PluginInf interface {
 	AgentInf
 	SetConnection(conn *session.ConnectionManager)
-	Init()
+	SetInfo(*proto.Info)
+	Init(PluginInf)
 }
 
 type Plugin struct {
