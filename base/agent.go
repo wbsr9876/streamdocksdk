@@ -8,28 +8,27 @@ import (
 )
 
 type AgentInf interface {
-	Tick(tick int)
+	Tick()
 	TxBegin(message *session.Message)
 	OnMessage(message *session.Message)
 }
 type Agent struct {
 	ticker      *time.Ticker
 	agent       AgentInf
-	tick        int
 	messageChan chan *session.Message
-	Tx          interface{}
-	TxEnd       func()
+	tx          interface{}
+	txEnd       func()
 }
 
 func (p *Agent) SetTx(tx interface{}, end func()) {
-	p.Tx = tx
-	p.TxEnd = end
+	p.tx = tx
+	p.txEnd = end
 }
 
 func (p *Agent) TxBegin(message *session.Message) {
-	_ = json.Unmarshal(message.Body, p.Tx)
-	if p.TxEnd != nil {
-		p.TxEnd()
+	_ = json.Unmarshal(message.Body, p.tx)
+	if p.txEnd != nil {
+		p.txEnd()
 	}
 	p.SetTx(nil, nil)
 }
@@ -53,10 +52,10 @@ func (p *Agent) loop() {
 	for {
 		select {
 		case <-p.ticker.C:
-			p.tick++
-			p.agent.Tick(p.tick)
+			p.agent.Tick()
 		case m := <-p.messageChan:
 			if m.Header == nil {
+				p.ticker.Stop()
 				return
 			}
 			log.Message("message:%+v", m.Header)

@@ -1,8 +1,6 @@
 package base
 
 import (
-	"fmt"
-	"github.com/wbsr9876/streamdocksdk/log"
 	"github.com/wbsr9876/streamdocksdk/proto"
 	"github.com/wbsr9876/streamdocksdk/session"
 )
@@ -15,45 +13,58 @@ type PluginInf interface {
 
 type Plugin struct {
 	Agent
-	Actions map[string]ActionInf
-	Info    *proto.Info
+	actionCreators map[string]ActionCreator
+	actions        map[string]ActionInf
+	info           *proto.Info
+	conn           *session.ConnectionManager
 }
 
 func (p *Plugin) Init(plugin PluginInf) {
+	p.actionCreators = make(map[string]ActionCreator)
+	p.actions = make(map[string]ActionInf)
 	p.Agent.Init(plugin)
 }
 
-func (p *Plugin) RegisterAction(name string, action ActionInf) {
-	if p.Actions == nil {
-		p.Actions = make(map[string]ActionInf)
-	}
-	action.Init()
-	p.Actions[name] = action
+func (p *Plugin) RegisterActionCreator(name string, f ActionCreator) {
+	p.actionCreators[name] = f
 }
 
 func (p *Plugin) SetInfo(info *proto.Info) {
-	p.Info = info
+	p.info = info
 }
 
 func (p *Plugin) SetConnection(conn *session.ConnectionManager) {
-	for _, action := range p.Actions {
-		action.SetConnection(conn)
-	}
+	p.conn = conn
 }
 
 func (p *Plugin) OnMessage(message *session.Message) {
-	if message.Header != nil {
-		if message.Header.Action != "" {
-			act, ok := p.Actions[message.Header.Action]
-			if !ok {
-				log.Message(fmt.Sprintf("unknown action %v", message.Header.Action))
+	if message.Header == nil {
+		return
+	}
+	if message.Header.Action == "" {
+		p.Agent.OnMessage(message)
+		return
+	}
+	if message.Header.Context == "" {
+		return
+	}
+	if message.Header.Event == "willDisappear" {
+		if act, ok := p.actions[message.Header.Context]; ok {
+			delete(p.actions, message.Header.Context)
+			act.OnMessage(&session.Message{})
+		}
+		return
+	}
+	act, ok := p.actions[message.Header.Context]
+	if !ok {
+		if f, ok := p.actionCreators[message.Header.Action]; ok {
+			if act = f(message.Header.Action, message.Header.Context, p.conn); act == nil {
 				return
 			}
-			act.OnMessage(message)
-		} else {
-			p.Agent.OnMessage(message)
+			p.actions[message.Header.Context] = act
 		}
 	}
+	act.OnMessage(message)
 }
 
 // TxBegin TODO implement
@@ -62,6 +73,6 @@ func (p *Plugin) TxBegin(message *session.Message) {
 }
 
 // Tick TODO implement
-func (p *Plugin) Tick(tick int) {
+func (p *Plugin) Tick() {
 	//Do nothing
 }

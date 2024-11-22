@@ -4,55 +4,57 @@ import (
 	"github.com/wbsr9876/streamdocksdk/proto"
 	"github.com/wbsr9876/streamdocksdk/session"
 	"strings"
-	"time"
 )
+
+type ActionCreator func(string, string, *session.ConnectionManager) ActionInf
 
 type ActionInf interface {
 	AgentInf
-	SetConnection(conn *session.ConnectionManager)
 	OnSettingsChanged()
-	Init()
+	Init(name, context string, conn *session.ConnectionManager)
 }
 
 type Action[T any] struct {
 	Agent
-	Conn              *session.ConnectionManager
-	Context           string
-	Name              string
-	State             int
-	OnSettingsChanged func()
-
-	settings       *T
-	backupSettings []byte
-	ticker         *time.Ticker
-	stop           chan struct{}
-	tick           int
-	messageChan    chan *session.Message
-	dirtyTick      int
+	conn              *session.ConnectionManager
+	context           string
+	name              string
+	settings          *T
+	state             int
+	messageChan       chan *session.Message
+	dirtyTick         int
+	onSettingsChanged func()
 }
 
-func (p *Action[T]) Init(action ActionInf) {
+func (p *Action[T]) Init(name, context string, conn *session.ConnectionManager, action ActionInf) {
+	p.name = name
+	p.context = context
+	p.conn = conn
 	p.Agent.Init(action)
-	p.OnSettingsChanged = action.OnSettingsChanged
+	p.onSettingsChanged = action.OnSettingsChanged
 }
 
 func (p *Action[T]) GetSettings() *T {
 	return p.settings
 }
 
-func (p *Action[T]) Tick(tick int) {
+func (p *Action[T]) GetState() int {
+	return p.state
+}
+
+func (p *Action[T]) Tick() {
 	if p.dirtyTick > 0 {
 		p.dirtyTick--
 		if p.dirtyTick == 0 {
-			if p.OnSettingsChanged != nil {
-				p.OnSettingsChanged()
+			if p.onSettingsChanged != nil {
+				p.onSettingsChanged()
 			}
 		}
 	}
 }
 
 func (p *Action[T]) TxBegin(message *session.Message) {
-	p.Context = message.Header.Context
+	p.context = message.Header.Context
 	switch message.Header.Event {
 	case "sendToPlugin":
 		p.settings = new(T)
@@ -67,34 +69,31 @@ func (p *Action[T]) TxBegin(message *session.Message) {
 		p.settings = new(T)
 		msg.Payload.Settings = p.settings
 		p.SetTx(msg, func() {
-			p.State = msg.Payload.State
+			p.state = msg.Payload.State
 			p.dirtyTick = 0
-			if p.OnSettingsChanged != nil {
-				p.OnSettingsChanged()
+			if p.onSettingsChanged != nil {
+				p.onSettingsChanged()
 			}
 		})
 	}
 	p.Agent.TxBegin(message)
 }
 
-func (p *Action[T]) SetConnection(conn *session.ConnectionManager) {
-	p.Conn = conn
-}
-
 func (p *Action[T]) SetState(state int) error {
+	p.state = state
 	msg := proto.NewSetState()
 	msg.Payload.State = state
-	msg.Context = p.Context
-	return p.Conn.Send(msg)
+	msg.Context = p.context
+	return p.conn.Send(msg)
 }
 
-func (p *Action[T]) SetTitle(title string, target proto.ESDSDKTarget, state int) error {
+func (p *Action[T]) SetTitle(title string, target proto.ESDSDKTarget) error {
 	msg := proto.NewSetTitle()
 	msg.Payload.Title = title
 	msg.Payload.Target = target
-	msg.Payload.State = state
-	msg.Context = p.Context
-	return p.Conn.Send(msg)
+	msg.Payload.State = p.state
+	msg.Context = p.context
+	return p.conn.Send(msg)
 }
 
 func (p *Action[T]) SetImage(image string, target proto.ESDSDKTarget, state int) error {
@@ -107,48 +106,48 @@ func (p *Action[T]) SetImage(image string, target proto.ESDSDKTarget, state int)
 	}
 	msg.Payload.Target = target
 	msg.Payload.State = state
-	msg.Context = p.Context
-	return p.Conn.Send(msg)
+	msg.Context = p.context
+	return p.conn.Send(msg)
 }
 
 func (p *Action[T]) SetSettings(settings interface{}) error {
 	msg := proto.NewSetSettings()
 	msg.Payload = settings
-	msg.Context = p.Context
-	return p.Conn.Send(msg)
+	msg.Context = p.context
+	return p.conn.Send(msg)
 }
 
 //func (p *Action[T]) SetGlobalSettings(settings interface{}) error {
 //	msg := proto.NewSetGlobalSettings()
 //	msg.Payload = settings
-//	msg.Context = p.Context
-//	return p.Conn.Send(msg)
+//	msg.context = p.context
+//	return p.conn.Send(msg)
 //}
 
 func (p *Action[T]) ShowAlert() error {
 	msg := proto.NewShowAlert()
-	msg.Context = p.Context
-	return p.Conn.Send(msg)
+	msg.Context = p.context
+	return p.conn.Send(msg)
 }
 
 func (p *Action[T]) ShowOk() error {
 	msg := proto.NewShowOk()
-	msg.Context = p.Context
-	return p.Conn.Send(msg)
+	msg.Context = p.context
+	return p.conn.Send(msg)
 }
 
 func (p *Action[T]) SendToPropertyInspector(payload interface{}) error {
 	msg := proto.NewSendToPropertyInspector()
-	msg.Context = p.Context
-	msg.Action = p.Name
+	msg.Context = p.context
+	msg.Action = p.name
 	msg.Payload = payload
-	return p.Conn.Send(msg)
+	return p.conn.Send(msg)
 }
 
 func (p *Action[T]) SendToPlugin(payload *T) error {
 	msg := proto.NewSendToPlugin[T]()
-	msg.Context = p.Context
-	msg.Action = p.Name
+	msg.Context = p.context
+	msg.Action = p.name
 	msg.Payload = payload
-	return p.Conn.Send(msg)
+	return p.conn.Send(msg)
 }
