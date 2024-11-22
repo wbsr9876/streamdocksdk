@@ -17,9 +17,11 @@ type Plugin struct {
 	actions        map[string]ActionInf
 	info           *proto.Info
 	conn           *session.ConnectionManager
+	devices        map[string]*proto.DeviceDidConnect
 }
 
 func (p *Plugin) Init(plugin PluginInf) {
+	p.devices = make(map[string]*proto.DeviceDidConnect)
 	p.actionCreators = make(map[string]ActionCreator)
 	p.actions = make(map[string]ActionInf)
 	p.Agent.Init(plugin)
@@ -67,8 +69,20 @@ func (p *Plugin) OnMessage(message *session.Message) {
 	act.OnMessage(message)
 }
 
-// TxBegin TODO implement
 func (p *Plugin) TxBegin(message *session.Message) {
+	event := message.Header.Event
+	switch event {
+	case "deviceDidConnect":
+		msg := &proto.DeviceDidConnect{}
+		p.SetTx(msg, func() {
+			p.devices[msg.Device] = msg
+		})
+	case "deviceDidDisconnect":
+		msg := &proto.DeviceDidDisconnect{}
+		p.SetTx(msg, func() {
+			delete(p.devices, msg.Device)
+		})
+	}
 	p.Agent.TxBegin(message)
 }
 
