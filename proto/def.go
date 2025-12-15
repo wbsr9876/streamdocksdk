@@ -1,5 +1,7 @@
 package proto
 
+import "encoding/json"
+
 type ESDSDKTarget = int
 
 const (
@@ -9,9 +11,10 @@ const (
 )
 
 type MessageHeader struct {
-	Event   string `json:"event"`
-	Action  string `json:"action"`
-	Context string `json:"context"`
+	Event      string `json:"event"`
+	Action     string `json:"action"`
+	Context    string `json:"context"`
+	ActionInfo json.RawMessage
 }
 
 type Info struct {
