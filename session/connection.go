@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/wbsr9876/streamdocksdk/log"
@@ -88,6 +89,7 @@ func (c *ConnectionManager) sendLoop() {
 				c.closed = true
 			}
 		default:
+			time.Sleep(time.Millisecond)
 		}
 	}
 }
